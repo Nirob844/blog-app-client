@@ -1,15 +1,9 @@
 import { gql, useMutation } from "@apollo/client";
 import React, { useEffect, useState } from "react";
-import "./Signup.css";
 
-const SIGNUP = gql`
-  mutation Reg(
-    $name: String!
-    $email: String!
-    $password: String!
-    $bio: String
-  ) {
-    signup(name: $name, email: $email, password: $password, bio: $bio) {
+const LOGIN = gql`
+  mutation login($email: String!, $password: String!) {
+    signin(email: $email, password: $password) {
       userError
       token
     }
@@ -17,39 +11,32 @@ const SIGNUP = gql`
 `;
 
 const Signin = () => {
-  const [userError, setUserError] = useState(null);
-  const [signup, { data, loading, error }] = useMutation(SIGNUP);
+  const [login, { data, error, loading }] = useMutation(LOGIN);
 
   const handleRegister = (e) => {
     e.preventDefault();
     const data = {
-      name: e.target.name.value,
       email: e.target.email.value,
       password: e.target.password.value,
-      bio: e.target.bio.value,
     };
-    console.log("data: ", data);
 
-    signup({
+    login({
       variables: data,
     });
   };
 
+  console.log("data: ", data);
+  const [userError, setUserError] = useState(null);
+
   useEffect(() => {
-    if (data && data.signup.token) {
-      console.log("token", data.signup.token);
-      localStorage.setItem("token", data.signup.token);
+    if (data && data?.signin?.token) {
+      console.log("token", data.signin.token);
+      localStorage.setItem("token", data.signin.token);
     }
-    if (data && data.signup.userError) {
-      setUserError(data.signup.userError);
+    if (data && data.signin?.userError) {
+      setUserError(data.signin.userError);
     }
   }, [data]);
-
-  if (loading) return "Submitting...";
-  if (error) return `Submission error! ${error.message}`;
-
-  console.log("data: ", data);
-  console.log(userError);
 
   return (
     <div className="form">
@@ -63,7 +50,6 @@ const Signin = () => {
           Login
         </button>
       </form>
-      {userError && <div className="error">{userError}</div>}
     </div>
   );
 };
